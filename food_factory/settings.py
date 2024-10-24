@@ -17,6 +17,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+PRODUCTION = True
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -25,7 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-pze@&d93_bhymf+a$6p!72rxd-6$bx%lx)+vg7%@vg!%-9guhw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if PRODUCTION:
+    DEBUG = False
+else:
+    DEBUG = True
 
 ALLOWED_HOSTS = ['foodfactory.pythonanywhere.com', '127.0.0.1']
 
@@ -82,7 +86,7 @@ WSGI_APPLICATION = 'food_factory.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / '../db.sqlite3',
     }
 }
 
@@ -120,7 +124,6 @@ USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-PRODUCTION = False
 
 STATIC_URL = 'static/'
 
