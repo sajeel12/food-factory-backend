@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+{% include "./components/header.html" with page_name="Dashboard" %}
+
+<!-- Statistics Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-10 mt-5 p-5 ">
+    <div class="bg-green-500 text-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold">Total Sales</h2>
+        <p class="text-4xl font-bold mt-2">pkr {{ total_sales }}</p>
+    </div>
+
+    <div class="bg-blue-500 text-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold">Total Delivered Orders</h2>
+        <p class="text-4xl font-bold mt-2">{{ total_delivered_orders }}</p>
+    </div>
+</div>
+
+<!-- Chart Section -->
+<div class="bg-white p-6 animate-fadeIn shadow-lg max-w-5xl mx-auto">
+    <h2 class="text-xl font-semibold mb-4">Daily Sales & Orders</h2>
+    <canvas id="salesChart" width="400" height="200"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+window.onload = function() {
+    console.log('Labels:', {{ labels|safe }});
+    console.log('Daily Sales:', {{ daily_sales|safe }});
+    console.log('Daily Orders:', {{ daily_order_counts|safe }});
+
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ labels|safe }},
+            datasets: [
+                {
+                    label: 'Daily Sales (pkr)',
+                    data: {{ daily_sales|safe }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.4,
+                    fill: false,
+                },
+                {
+                    label: 'Daily Order Count',
+                    data: {{ daily_order_counts|safe }},
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    tension: 0.4,
+                    fill: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                }
+            }
+        }
+    });
+};
+</script>
+
+{% endblock %}

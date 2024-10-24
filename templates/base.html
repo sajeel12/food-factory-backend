@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block layout %} 
+{% load static %}
+
+    <div
+      class="min-h-screen flex flex-col flex-auto flex-shrink-0 antialiased bg-gray-50 text-gray-800"
+    >
+      {% include "navbar.html" %}
+
+      <div class="md:ml-64  md:mt-0 mt-14 flex-grow">{% block content %} {% endblock %}</div>
+
+    </div>
+
+    <script>
+    loadtoasterOption();
+    </script>
+
+
+{% endblock %}

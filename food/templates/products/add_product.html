@@ -1,0 +1,272 @@
+{% extends "layout.html" %} {% load static %} {% block layout %}
+
+<body class="bg-gray-100 p-10">
+  <h1 class="text-3xl font-bold mb-6">Add Product</h1>
+
+  <form
+    method="POST"
+    enctype="multipart/form-data"
+    class="bg-white p-6 rounded-lg shadow-md"
+  >
+    {% csrf_token %}
+
+    <!-- Product Details -->
+
+    <div class="mb-6  ">
+      
+      <label class="block mb-2 text-sm font-medium text-gray-900 flex gap-3 items-center ">Category  <img  onclick="window.location.reload()" class="cursor-pointer hover:scale-125" width="20px" src="{% static 'svgs/refresh_icon.svg' %}" alt="">  </label>
+      
+      <div  class="flex">
+        <select
+        name="category"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        required
+        >
+        {% for category in categories %}
+        <option value="{{ category.id }}">{{ category.name }}</option>
+        {% endfor %}
+      </select>
+      <img class="cursor-pointer hover:scale-125"
+      onclick="window.open('http://127.0.0.1:8000/admin/food/category/add/', '_blank').focus();"
+      width="50px" src="{% static 'svgs/plus_icon.svg' %}" alt=""> 
+    </div>
+    </div>
+
+    <div class="grid gap-3 mb-6 md:grid-cols-2">
+      <!-- Product Name -->
+      <div>
+        <label
+          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >Product Name</label
+        >
+        <input
+          type="text"
+          name="product_name"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          placeholder="Enter product name"
+          required
+        />
+      </div>
+
+      <!-- Product Description -->
+      <div>
+        <label
+          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >Description</label
+        >
+        <textarea
+          name="description"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          placeholder="Enter product description"
+          required
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="grid gap-3 mb-6 md:grid-cols-2">
+      <!-- Product Category -->
+
+      <!-- Product Availability -->
+      <div>
+        <label
+          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >Available</label
+        >
+        <input
+          type="checkbox"
+          checked
+          name="is_available"
+          class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-500 dark:ring-offset-gray-800"
+        />
+      </div>
+    </div>
+
+    <!-- Product Image -->
+    <div class="mb-6">
+      <label
+        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+        >Product Image</label
+      >
+      <input
+        type="file"
+        name="image"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      />
+    </div>
+
+    <!-- Product Variations Section -->
+    <h2 class="text-xl font-semibold mb-4">Product Variations</h2>
+
+    <div id="variations" class="grid gap-3 mb-6 md:grid-cols-2">
+      <!-- Initial Variation (Fixed, Non-removable) -->
+      <div class="variation grid grid-cols-2 gap-4 items-end">
+        <div>
+          <label
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            >Variation Name</label
+          >
+          <input
+          type="text"
+          step="0.01"
+          name="size[]"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          placeholder="Enter variation name "
+          required
+        />
+
+        </div>
+
+        <div>
+          <label
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            >Price</label
+          >
+          <input
+            type="number"
+            step="0.01"
+            name="price[]"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="Enter price"
+            required
+          />
+        </div>
+      </div>
+    </div>
+
+    <div id="additional-variations"></div>
+
+    <!-- Button to add more variations -->
+    <button
+      type="button"
+      onclick="addVariation()"
+      class="mb-6 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800"
+    >
+      Add Another Variation</button
+    ><br />
+
+    <!-- Submit Button -->
+    <button
+      type="submit"
+      class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800"
+    >
+      Submit
+    </button>
+  </form>
+
+
+  <script>
+  
+    let current_window ;
+  function openPopupWindow(url) {
+      if (current_window){
+        current_window.close()
+      }
+    // Define the dimensions of the new window
+    var windowWidth = 800;
+    var windowHeight = 800;
+  
+    // Get the user's screen dimensions
+    var screenWidth = window.screen.width;
+    var screenHeight = window.screen.height + 100;
+  
+    // Calculate the position to place the window at the center of the screen
+    var left = (screenWidth / 2) - (windowWidth / 2);
+    var top = (screenHeight / 2) - (windowHeight / 2);
+  
+    // Open the new window centered on the screen
+    current_window = window.open( url, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,width=" + windowWidth + ",height=" + windowHeight + ",top=" + top + ",left=" + left);
+  }</script>
+
+  <script>
+    // Function to dynamically add more variation fields
+    function addVariation() {
+      var variationDiv = document.createElement("div");
+      variationDiv.classList.add(
+        "variation",
+        "grid",
+        "grid-cols-2",
+        "gap-4",
+        "items-end",
+        "mb-4"
+      );
+
+      variationDiv.innerHTML = `
+        <div>
+          <label
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            >Variation Name</label
+          >
+          <input
+          type="text"
+          step="0.01"
+          name="size[]"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          placeholder="Enter variation name "
+          required
+        />
+
+        </div>
+
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Price</label>
+                    <input type="number" step="0.01" name="price[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter price" required>
+                </div>
+
+                <button type="button" onclick="removeVariation(this)" class="mt-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">
+                    Remove
+                </button>
+            `;
+
+      document
+        .getElementById("additional-variations")
+        .appendChild(variationDiv);
+    }
+
+    // Function to remove variation field
+    function removeVariation(button) {
+      button.parentElement.remove();
+    }
+  </script>
+
+  <script>
+
+document.querySelector('form').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Prevent the default form submission
+
+    // Get the form data
+    let formData = new FormData(document.querySelector('form'));
+
+    try {
+        // Submit the form data via Fetch API
+        let response = await fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            // If the submission is successful, call submitForm()
+            submitForm();
+        } else {
+            // Handle errors (e.g., validation errors)
+            let errorData = await response.json();
+            console.error('Form submission failed:', errorData);
+            alert('Form submission failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        alert('An unexpected error occurred. Please try again.');
+    }
+});
+
+function submitForm() {
+    if (window.opener) {
+        // Call the function in the main window to update the DOM
+        window.opener.addPartSuccess();
+    }
+    window.close(); // Close the popup
+}
+
+  </script>
+</body>
+
+{% endblock %}

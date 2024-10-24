@@ -1,0 +1,134 @@
+{% extends "layout.html" %}
+{% block layout %}
+
+<body class="bg-gray-100 p-10">
+    <h1 class="text-3xl font-bold mb-6">Edit Product</h1>
+
+    <form method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow-md">
+        {% csrf_token %}
+
+        <!-- Product Details -->
+        <div class="mb-6">
+            <label class="block mb-2 text-sm font-medium text-gray-900">Category</label>
+            <select name="category" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id == product.category_id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="grid gap-3 mb-6 md:grid-cols-2">
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-900">Product Name</label>
+                <input type="text" name="product_name" value="{{ product.name }}" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required />
+            </div>
+
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-900">Description</label>
+                <textarea name="description" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required>{{ product.description }}</textarea>
+            </div>
+        </div>
+
+        <h2 class="text-xl font-semibold mb-4">Product Variations</h2>
+
+        <div id="variations" class="grid gap-3 mb-6">
+            {% for variation in variations %}
+                <div class="variation grid grid-cols-3 gap-4 items-end">
+                    <input type="hidden" name="variation_id[]" value="{{ variation.id }}" />
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900">Size</label>
+                        <select name="size[]" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required>
+                            <option value="small" {% if variation.size == "small" %}selected{% endif %}>Small</option>
+                            <option value="medium" {% if variation.size == "medium" %}selected{% endif %}>Medium</option>
+                            <option value="large" {% if variation.size == "large" %}selected{% endif %}>Large</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900">Price</label>
+                        <input type="number" step="0.01" name="price[]" value="{{ variation.price }}" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required />
+                    </div>
+
+                    <button type="button" onclick="removeVariation(this)" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg">Remove</button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" onclick="addVariation()" class="mb-6 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg">Add Another Variation</button>
+
+        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg">Save Changes</button>
+    </form>
+
+    <template id="variation-template">
+        <div class="variation grid grid-cols-3 gap-4 items-end">
+            <input type="hidden" name="variation_id[]" value="" />
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-900">Size</label>
+                <select name="size[]" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required>
+                    <option value="small">Small</option>
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-900">Price</label>
+                <input type="number" step="0.01" name="price[]" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required />
+            </div>
+
+            <button type="button" onclick="removeVariation(this)" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg">Remove</button>
+        </div>
+    </template>
+
+    <script>
+        function addVariation() {
+            const template = document.getElementById('variation-template').content.cloneNode(true);
+            document.getElementById('variations').appendChild(template);
+        }
+
+        function removeVariation(button) {
+            button.parentElement.remove();
+        }
+
+
+        document.querySelector('form').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Prevent default form submission
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    try {
+        // Submit form data via Fetch API
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            // On success, trigger the function in the main window
+            submitForm();
+        } else {
+            // If the submission fails, log the error
+            const errorData = await response.json();
+            console.error('Form submission failed:', errorData);
+            alert('Form submission failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        alert('An unexpected error occurred. Please try again.');
+    }
+});
+
+function submitForm() {
+    if (window.opener) {
+        // Notify the parent window and close the popup
+        window.opener.addPartSuccess();
+    }
+    window.close(); // Close the popup
+}
+    </script>
+</body>
+
+{% endblock %}

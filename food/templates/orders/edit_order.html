@@ -1,0 +1,198 @@
+{% extends "layout.html" %}
+{% block layout %}
+{% load static %}
+
+<body class="bg-gray-100 p-10">
+    <h1 class="text-3xl font-bold mb-6">Edit Order</h1>
+
+    <form method="POST" class="bg-white p-6 rounded-lg shadow-md">
+        {% csrf_token %}
+
+        <!-- Customer Selection -->
+        <div class="mb-6">
+            <label class="block mb-2 text-sm font-medium text-gray-900">Customer</label>
+            <select name="customer" class=" select2 bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required>
+                {% for customer in customers %}
+                    <option value="{{ customer.id }}" {% if customer.id == order.customer_id %}selected{% endif %}>
+                        {{ customer.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Order Status -->
+        <div class="mb-6">
+            <label class="block mb-2 text-sm font-medium text-gray-900">Order Status</label>
+            <select name="status" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required>
+                <option value="Pending" {% if order.status == "Pending" %}selected{% endif %}>Pending</option>
+                <option class="text-yellow-600" value="In Progress" {% if order.status == "In Progress" %}selected{% endif %}>In Progress</option>
+                <option class="text-green-600" value="Delivered" {% if order.status == "Delivered" %}selected{% endif %}>Delivered</option>
+                <option class="text-red-600"  value="Canceled" {% if order.status == "canceled" %}selected{% endif %}>Canceled</option>
+            </select>
+        </div>
+
+        <h2 class="text-xl font-semibold mb-4">Order Items</h2>
+
+        <div id="order-items" class="grid gap-3 mb-6">
+            {% for item in order_items %}
+                <div class="item grid grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900">Product</label>
+                        <select name="product[]" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required onchange="loadVariations(this)">
+                            {% for product in products %}
+                                <option value="{{ product.id }}" {% if product.id == item.product_variation.product_id %}selected{% endif %}>
+                                    {{ product.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900">Variation</label>
+                        <select name="variation[]" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required>
+                            {% for variation in item.product_variation.product.variations.all %}
+                                <option value="{{ variation.id }}" {% if variation.id == item.product_variation_id %}selected{% endif %}>
+                                    {{ variation.size }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900">Quantity</label>
+                        <input type="number" name="quantity[]" value="{{ item.quantity }}" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required />
+                    </div>
+                    <img
+                    onclick="removeItem(this)"
+                    class="cursor-pointer hover:scale-125" 
+                    width="25px" src="{% static 'svgs/trashicon.svg' %}">
+                </div>
+                <hr>
+            {% endfor %}
+        </div>
+
+        <img class="cursor-pointer hover:scale-125"
+        onclick="addItem()"
+        width="70px" src="{% static 'svgs/plus_icon.svg' %}" alt=""> 
+        <br>
+        <button type="submit" class="px-4 py-5 w-full text-sm font-medium text-white bg-green-600 rounded-lg">Save Changes</button>
+    </form>
+
+    <template id="item-template">
+        <div class="item grid grid-cols-4 gap-4 items-end">
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-900">Product</label>
+                <select name="product[]" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required onchange="loadVariations(this)">
+                    {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-900">Variation</label>
+                <select name="variation[]" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required>
+                    <!-- Variations will be loaded dynamically based on selected product -->
+                </select>
+            </div>
+
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-900">Quantity</label>
+                <input type="number" name="quantity[]" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required />
+            </div>
+            <img 
+            onclick="removeItem(this)"
+            class="cursor-pointer hover:scale-125" 
+            width="25px" src="{% static 'svgs/trashicon.svg' %}">
+        </div>
+    </template>
+
+    <script>
+        function addItem() {
+            const template = document.getElementById('item-template').content.cloneNode(true);
+            document.getElementById('order-items').appendChild(template);
+        }
+
+        function removeItem(button) {
+            button.parentElement.remove();
+        }
+
+
+
+        function loadVariations(productSelect) {
+    const productId = productSelect.value;
+    const variationSelect = productSelect.parentElement.nextElementSibling.querySelector('select');
+
+    // Clear any existing options
+    variationSelect.innerHTML = '';
+
+    // Fetch variations for the selected product from the server
+    fetch(`/api/product-variations/${productId}/`)
+        .then(response => response.json())
+        .then(data => {
+            // Populate the variation select dropdown with new options
+            data.variations.forEach(variation => {
+                const option = document.createElement('option');
+                option.value = variation.id;
+                option.textContent = `${variation.size} - ${variation.price}`;
+                variationSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error fetching variations:', error));
+}
+
+
+
+
+
+        document.querySelector('form').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Prevent default form submission
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    try {
+        // Submit form data via Fetch API
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            // On success, trigger the function in the main window
+            submitForm();
+        } else {
+            // If the submission fails, log the error
+            const errorData = await response.json();
+            console.error('Form submission failed:', errorData);
+            alert('Form submission failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        alert('An unexpected error occurred. Please try again.');
+    }
+});
+
+function submitForm() {
+    if (window.opener) {
+        // Notify the parent window and close the popup
+        window.opener.addOrderSuccess();
+    }
+    window.close(); // Close the popup
+}
+
+    </script>
+    <script>
+        function select2 () {
+            $('.select2').select2({
+                placeholder: "Select a part",
+      
+            });
+        }
+        $(document).ready(
+          select2()
+        );
+      </script>
+</body>
+
+{% endblock %}

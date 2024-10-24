@@ -1,0 +1,71 @@
+{% load static %}
+<div id="main-navbar" class="fixed flex flex-col top-0 left-0 w-64 bg-orange-800 h-full shadow-lg hidden md:flex">
+  <div class="flex items-center justify-center h-14 border-b text-white font-bold text-2xl bg-orange-500">
+    <div>Food Factory</div>
+  </div>
+  <div class="overflow-y-auto overflow-x-hidden flex-grow bg-gray-800">
+    <ul id="navbar-items" class="flex flex-col py-4 space-y-1 font-bold"></ul>
+  </div>
+</div>
+
+<!-- Mobile Navbar -->
+<div class="fixed  top-0 left-0 w-full bg-orange-800 h-14 flex items-center justify-between px-4 md:hidden">
+  <div class="text-white font-bold text-2xl">Food Factory</div>
+  <button id="mobile-menu-toggle" class="text-white">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+    </svg>
+  </button>
+</div>
+
+<div id="mobile-menu" class="sticky z-50 top-14 left-0 w-full bg-gray-800 h-screen hidden md:hidden">
+  <ul id="mobile-navbar-items" class="flex flex-col py-4 space-y-1 font-bold"></ul>
+</div>
+
+<script>
+  const menuItems = [
+    { name: "Admin Panel", url: "/admin", page: "admin", icon: "{% static 'svgs/home_icon.svg' %}" },
+    { name: "Dashboard", url: "{% url 'dashboard' %}", page: "dashboard", icon: "{% static 'svgs/home_icon.svg' %}" },
+    { name: "Products", url: "{% url 'products' %}", page: "products", icon: "{% static 'svgs/home_icon.svg' %}" },
+    { name: "Orders", url: "{% url 'orders' %}", page: "orders", icon: "{% static 'svgs/home_icon.svg' %}" },
+    { name: "Logout", url: "{% url 'logout_user' %}", page: "logout", icon: "{% static 'svgs/logout_icon.svg' %}" },
+  ];
+
+  function renderMenu(navbarId) {
+    const param_page = getQueryParam('page');
+    const navbar = document.getElementById(navbarId);
+    const active_class = "bg-yellow-700 text-white border-l-8 border-red-600";
+    const non_active_class = "hover:bg-orange-700 text-white";
+
+    menuItems.forEach((item) => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <a href="${item.url}?page=${item.page}" ${item.url === '/admin' ? "target='_blank'" : ""}
+           class="gap-2 transition-all duration-200 menu-item flex items-center h-11 ${param_page === item.page ? active_class : non_active_class} pr-6"
+           data-page="${item.page}">
+          <span class="ml-4 flex items-center gap-3">
+            <img src="${item.icon}" width="25px" alt="">
+          </span>
+          <span class="ml-2 text-md tracking-wide truncate">${item.name}</span>
+        </a>
+      `;
+      navbar.appendChild(li);
+    });
+  }
+
+  // Render both the desktop and mobile menus
+  renderMenu('navbar-items');
+  renderMenu('mobile-navbar-items');
+
+  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  mobileMenuToggle.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+  });
+
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+</script>

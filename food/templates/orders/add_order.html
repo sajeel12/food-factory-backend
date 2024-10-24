@@ -1,0 +1,235 @@
+{% extends "layout.html" %}
+{% block layout %}
+{% load static %}
+
+<body class="bg-gray-100 p-10">
+    <h1 class="text-3xl font-bold mb-6">Create Order</h1>
+
+    <form method="POST" class="bg-white p-6 rounded-lg shadow-md">
+        {% csrf_token %}
+
+        <!-- Customer Selection -->
+        <div class="mb-6 flex justify-between items-center ">
+            <div  class="w-full" >
+
+                <label class="block mb-2 text-sm font-medium text-gray-900 flex gap-3 items-center ">Customer  <img  onclick="window.location.reload()" class="cursor-pointer hover:scale-125" width="20px" src="{% static 'svgs/refresh_icon.svg' %}" alt="">  </label>
+                <select
+                name="customer"
+                class=" select2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                required>
+                {% for customer in customers %}
+                <option value="{{ customer.id }}">{{ customer.phone }} - {{customer.name}} </option>
+                {% endfor %}
+            </select>
+        </div>
+        <img class="cursor-pointer hover:scale-125"
+        onclick="openPopupWindow('{% url 'add_customer' %}')"
+        width="50px" src="{% static 'svgs/plus_icon.svg' %}" alt=""> 
+        </div>
+
+
+
+        <div class="mb-6">
+            <label class="block mb-2 text-sm font-medium text-gray-900  ">Order Type   </label>
+            <select
+                name="order_type"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                required>
+                    <option value="Delivery"> Delivery </option>
+                    <option selected value="Dine-in">  Dine-in </option>
+            </select>
+        </div>
+
+        <h2 class="text-xl font-semibold mb-4">Order Items</h2>
+
+        <div id="order-items" class="grid grid-cols-1   mb-6 ">
+            <!-- Initial Order Item (Fixed) -->
+            <div class="item grid grid-cols-3 gap-4 items-end">
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Product</label>
+                    <select name="product[]" class="product-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" required>
+                        <option value="">Select a product</option>
+                        {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label  class="block mb-2 text-sm font-medium text-gray-900">Variation</label>
+                    <select name="variation[]" class="variation-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" required>
+                        <option value="">Select a variation</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900">Quantity</label>
+                    <input type="number" name="quantity[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" placeholder="Enter quantity" required />
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div id="additional-items"></div>
+
+        <!-- Button to Add More Items -->
+        <img class="cursor-pointer hover:scale-125"
+        onclick="addItem()"
+        width="70px" src="{% static 'svgs/plus_icon.svg' %}" alt=""> 
+
+        <br>
+
+        <!-- Submit Button -->
+        <button
+            type="submit"
+            class="px-4 py-5 w-full text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
+            Submit Order
+        </button>
+    </form>
+
+    <template id="item-template">
+        <div class=" flex justify-between  mt-2 items-center mb-4">
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-900">Product</label>
+                <select name="product[]" class="product-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" required>
+                    <option value="">Select a product</option>
+                    {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-900">Variation</label>
+                <select name="variation[]" class="variation-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" required>
+                    <option value="">Select a variation</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-900">Quantity</label>
+                <input type="number" name="quantity[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" placeholder="Enter quantity" required />
+            </div>
+
+            <img
+            onclick="removeItem(this)"
+            class="cursor-pointer hover:scale-125" 
+            width="25px" src="{% static 'svgs/trashicon.svg' %}">
+        </div>
+    </template>
+
+
+
+
+    <script>
+  
+        let current_window ;
+      function openPopupWindow(url) {
+          if (current_window){
+            current_window.close()
+          }
+        // Define the dimensions of the new window
+        var windowWidth = 800;
+        var windowHeight = 800;
+      
+        // Get the user's screen dimensions
+        var screenWidth = window.screen.width;
+        var screenHeight = window.screen.height + 100;
+      
+        // Calculate the position to place the window at the center of the screen
+        var left = (screenWidth / 2) - (windowWidth / 2);
+        var top = (screenHeight / 2) - (windowHeight / 2);
+      
+        // Open the new window centered on the screen
+        current_window = window.open( url, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,width=" + windowWidth + ",height=" + windowHeight + ",top=" + top + ",left=" + left);
+      }</script>
+      
+
+    <script>
+
+document.querySelector('form').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Prevent the default form submission
+
+    // Get the form data
+    let formData = new FormData(document.querySelector('form'));
+
+    try {
+        // Submit the form data via Fetch API
+        let response = await fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            // If the submission is successful, call submitForm()
+            submitForm();
+        } else {
+            // Handle errors (e.g., validation errors)
+            let errorData = await response.json();
+            console.error('Form submission failed:', errorData);
+            alert('Form submission failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        alert('An unexpected error occurred. Please try again.');
+    }
+});
+
+
+
+        function submitForm() {
+    if (window.opener) {
+        // Call the function in the main window to update the DOM
+        window.opener.addOrderSuccess();
+    }
+    window.close(); // Close the popup
+}
+
+    </script>
+
+    <script>
+        function addItem() {
+            const template = document.getElementById('item-template').content.cloneNode(true);
+            document.getElementById('additional-items').appendChild(template);
+        }
+
+        function removeItem(button) {
+            button.parentElement.remove();
+        }
+
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('product-select')) {
+                console.log('chened')
+                const productId = e.target.value;
+                const variationSelect = e.target.closest('.item').querySelector('.variation-select');
+
+                fetch(`/api/product-variations/${productId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                        variationSelect.innerHTML = '<option value="">Select a variation</option>';
+                        data.variations.forEach(variation => {
+                            variationSelect.innerHTML += `<option value="${variation.id}">${variation.size}</option>`;
+                        });
+                    });
+            }
+        });
+
+        window.onbeforeunload = function() {current_window.close()}
+    </script>
+<script>
+    function select2 () {
+        $('.select2').select2({
+            placeholder: "Select a part",
+  
+        });
+    }
+    $(document).ready(
+      select2()
+    );
+  </script>
+
+</body>
+
+{% endblock %}

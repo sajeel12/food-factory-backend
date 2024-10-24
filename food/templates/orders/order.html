@@ -1,0 +1,261 @@
+{% extends "base.html" %} {% block content %} {% load static %} 
+{% include "../components/header.html" with page_name="Orders" %}
+
+
+<div id="loading-spinner" class="hidden">
+  <div class="flex justify-center items-center">
+    <img 
+      class="animate-spin" 
+      src="{% static 'svgs/loading.svg' %}" 
+      alt="Loading" 
+      width="40px"
+    />
+  </div>
+</div>
+<div class="bg-orange-100 rounded-lg p-6 shadow-lg m-6">
+  <div class="flex justify-between items-center">
+    <span class="flex">
+      <h2
+        class="text-lg text-white px-3 py-1 mb-3 font-medium mb-1 text-whitPartse bg-gray-500 rounded-lg"
+      >
+        Available Orders
+      </h2>
+    </span>
+    <div class="flex gap-3" >
+
+      <button
+      class="cursor-pointer bg-green-400 hover:bg-green-300 text-white px-4 rounded-lg"
+      onclick="openPopupWindow('{% url 'add_order' %}')"
+      >
+      + Add Order
+    </button>
+    
+    <button 
+    class="cursor-pointer bg-green-400 hover:bg-green-300 text-white px-4 rounded-lg"
+    onclick="openPopupWindow('{% url 'in_progress_orders' %}')" >open orders</button>
+  </div>
+
+  </div>
+
+  <div class="relative overflow-x-auto shadow-md sm:rounded-lg bg-white z-1">
+    <table
+      id="orders_table"
+      class="is-striped w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 text-center"
+    >
+      <thead
+        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="pl-6 py-3">Order #</th>
+          <th scope="col" class="pl-6 py-3">cutomer</th>
+          <!-- <th scope="col" class="pl-6 py-3">Part Name</th> -->
+          <th scope="col" class="pl-6 py-3">status</th>
+          <th scope="col" class="pl-6 py-3">order_type</th>
+          <th scope="col" class="pl-6 py-3">Total Price (pkr)</th>
+
+          <th scope="col" class="pl-6 py-3">order_date</th>
+
+          <th scope="col" class="pl-6 py-3">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="text-xs" id="orders_table_body"></tbody>
+    </table>
+  </div>
+
+</div>
+
+
+
+<!-- delete part confirm model section  -->
+
+<div
+id="confirm-delete-modal"
+class="fixed hidden z-50 inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full px-4"
+  >
+    <div class="relative top-40 mx-auto shadow-xl rounded-md bg-white max-w-xl">
+
+    <div class="p-4 md:p-5 text-center">
+        <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+        </svg>
+        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+          Are you sure you want to delete this receiving? <br>  with receiving number # <b> {{receiving.receiving_number}} </b> 
+        
+        </h3>
+        <button  id="confirm-delete-button"  data-modal-hide="popup-modal" type="button" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+            Yes, I'm sure
+        </button>
+        <button onclick="closeDeletePartModal()"  id="confirm-delete-button" data-modal-hide="popup-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">No, cancel</button>
+
+        
+      </div>
+    </div>
+  </div>
+
+<!-- delete part confirm model section  -->
+
+<!-- Parts crud operation  -->
+
+<script>
+  document.addEventListener('keydown', function(event) {
+    // Check if the 'Control' key is pressed along with the 'O' key
+    if (event.ctrlKey && event.key === 'a') {
+        event.preventDefault(); // Prevent the default behavior (like 'Open' dialog)
+        console.log('hot keys press')
+          openPopupWindow('http://127.0.0.1:8000/add-order')
+        
+        // Your custom logic here
+    }
+});
+</script>
+
+<script>
+  
+  let current_window ;
+function openPopupWindow(url) {
+    if (current_window){
+      current_window.close()
+    }
+  // Define the dimensions of the new window
+  var windowWidth = 800;
+  var windowHeight = 800;
+
+  // Get the user's screen dimensions
+  var screenWidth = window.screen.width;
+  var screenHeight = window.screen.height + 100;
+
+  // Calculate the position to place the window at the center of the screen
+  var left = (screenWidth / 2) - (windowWidth / 2);
+  var top = (screenHeight / 2) - (windowHeight / 2);
+
+  // Open the new window centered on the screen
+  current_window = window.open( url, "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,width=" + windowWidth + ",height=" + windowHeight + ",top=" + top + ",left=" + left);
+}</script>
+
+
+<script>
+    function addOrderSuccess(){
+      toastr.success('Order added successfully', 'success')
+      fetchOrders();
+    }
+  
+  </script>
+
+<script>
+  function addOrderSuccess(){
+    toastr.success('Order added successfully', 'success')
+    fetchOrders();
+  }
+
+</script>
+
+
+<script>
+async function fetchOrders() {
+  const tableBody = document.getElementById("orders_table_body");
+
+  // Display loading spinner
+  tableBody.innerHTML = `
+    <div class='flex justify-center w-full p-8'>
+      <img class='animate-spin' src='{% static 'svgs/loading.svg' %}' width='40px'>
+    </div>
+  `;
+
+  try {
+    const response = await fetch("/api/fetch-orders/");
+    const data = await response.json();
+    
+    // Clear existing DataTable if initialized
+    const dataTable = $('#orders_table').DataTable();
+    dataTable.destroy();
+
+    tableBody.innerHTML = ""; // Clear the table body
+
+    data.orders.forEach((item, i) => {
+      const row = `
+        <tr class="table-hover odd:bg-white even:bg-gray-50">
+          <th class=" py-4 font-medium text-gray-900 whitespace-nowrap">${item.id}</th>
+          <td class=" py-4 font-medium text-gray-900">${item.customer_phone}</td>
+          <td class=" py-4 uppercase 
+          ${item.status == "In Progress" ? 'text-yellow-600': 
+          item.status == "Delivered" ? 'text-green-600' :
+          item.status  == "Canceled" && 'text-red-600'
+           } 
+          ">
+             ${item.status}</td>
+          <td class=" py-4">${item.order_type}</td>
+          <td class=" py-4 text-green-600 font-bold text-[14px] ">${item.total_price}</td>
+          <td class=" py-4">${item.order_date}</td>
+ 
+          <td class=" flex gap-3 px-2 py-4">
+            <img 
+              onclick="confirmDelete(${item.id})"
+              class="cursor-pointer hover:scale-125" 
+              width="25px" src="{% static 'svgs/trashicon.svg' %}">
+              <img 
+              onclick="openPopupWindow('/edit-order/${item.id}/')"
+              class="cursor-pointer hover:scale-125" 
+              width="20px" src="{% static 'svgs/edit_icon.svg' %}">
+          </td>
+        </tr>
+      `;
+      tableBody.insertAdjacentHTML("beforeend", row);
+    });
+
+    // Re-initialize DataTable after adding new rows
+    $('#orders_table').DataTable({
+      order: [[3, '']]
+    });
+  } catch (error) {
+    console.error("Error fetching parts:", error);
+  }
+}
+
+// Fetch parts on page load
+fetchOrders();
+
+  // document.addEventListener("DOMContentLoaded", () => {
+    // fetchParts();
+  // });
+</script>
+
+<script>
+  let orderIdToDelete = null;
+
+function confirmDelete(id) {
+  orderIdToDelete = id;
+  document.getElementById("confirm-delete-modal").classList.remove("hidden");
+}
+
+function closeDeletePartModal() {
+  document.getElementById("confirm-delete-modal").classList.add("hidden");
+}
+
+document.getElementById("confirm-delete-button").addEventListener("click", async function () {
+  if (orderIdToDelete) {
+    try {
+      const response = await fetch(`/api/delete-order/${orderIdToDelete}/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}", // Ensure CSRF token is sent
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete part");
+      }
+
+      toastr.success("Order deleted successfully", "Success");
+      closeDeletePartModal();
+      fetchOrders(); // Refresh the parts table
+    } catch (error) {
+      console.error("Error:", error);
+      toastr.error("Error deleting part", "Error");
+    }
+  }
+});
+
+</script>
+
+{% endblock %}

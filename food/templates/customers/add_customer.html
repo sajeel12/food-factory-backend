@@ -1,0 +1,116 @@
+{% extends "layout.html" %} {% load static %} {% block layout %}
+
+<body class="bg-gray-100 p-10">
+  <h1 class="text-3xl font-bold mb-6">Add customer</h1>
+
+  <form
+    method="POST"
+    enctype="multipart/form-data"
+    class="bg-white p-6 rounded-lg shadow-md"
+  >
+    {% csrf_token %}
+
+    <!-- Product Details -->
+
+
+    <div class="grid gap-3 mb-6 md:grid-cols-1">
+      <!-- Product Name -->
+      <div>
+        <label
+          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >Name</label
+        >
+        <input
+          type="text"
+          name="name"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          placeholder="Enter customer name"
+          required
+        />
+      </div>
+      <div>
+        <label
+          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >Phone</label
+        >
+        <input
+          type="number"
+          name="phone"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          placeholder="Enter customer phone"
+          required
+          
+        />
+    </div>
+      <div>
+        <label
+          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >Email (optional) </label
+        >
+        <input
+          type="email"
+          name="email"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          placeholder="Enter customer email"
+          
+        />
+      </div>
+
+    <div>
+        <label
+          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >Address (optional)</label
+        >
+
+        <textarea 
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        name="address" ></textarea>
+    </div>
+
+    <!-- Submit Button -->
+    <button
+      type="submit"
+      class="px-4 py-5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800"
+    >
+      Submit
+    </button>
+  </form>
+ 
+ 
+ 
+  
+  <script>
+
+document.querySelector('form').addEventListener('submit', async (e) => {
+    e.preventDefault(); 
+
+    let formData = new FormData(document.querySelector('form'));
+
+    try {
+        let response = await fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            submitForm();
+        } else {
+            let errorData = await response.json();
+            console.error('Form submission failed:', errorData);
+            alert('Form submission failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        alert('An unexpected error occurred. Please try again.');
+    }
+});
+
+function submitForm(){
+    console.log('form submit success')
+    window.close()
+}
+
+  </script>
+</body>
+
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block layout %}
+<body class="bg-gray-100 min-h-screen p-3">
+
+    <h1 class="text-4xl font-bold text-center text-blue-700 mb-8">In-Progress Orders</h1>
+
+    <div class="max-w-7xl mx-auto" id="orders-container">
+        <!-- Orders will be rendered here dynamically -->
+    </div>
+
+    <script>
+        // Function to fetch and render in-progress orders dynamically
+        async function fetchOrders() {
+            try {
+                const response = await fetch("{% url 'in_progress_orders_data' %}");
+                const data = await response.json();
+
+                const ordersContainer = document.getElementById('orders-container');
+                ordersContainer.innerHTML = ''; // Clear previous content
+
+                data.orders.forEach(order => {
+                    const orderHTML = `
+                        <div class="bg-white p-6 mb-4 rounded-lg shadow-lg border-l-4 border-blue-500">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-2xl font-semibold text-gray-800">Order #${order.id}</h2>
+                                
+                            </div>
+                            <div class="flex flex-wrap gap-5 mt-2">
+                                <p class="text-gray-500">Customer: <span class="font-medium">${order.customer_name}</span> 
+                                    (${order.customer_phone})
+                                </p>
+                                <p class="text-gray-500">Order Type: <span class="font-medium">${order.order_type}</span></p>
+                                <p class="text-gray-500">Order Date: 
+                                    <span class="font-medium">${order.order_date}</span>
+                                </p>
+                            </div>
+
+                            <h3 class="mt-4 text-lg font-semibold text-gray-700">Items</h3>
+                            <ul class="list-disc pl-5 text-gray-600">
+                                ${order.items.map(item => `
+                                    <li class="mt-1">
+                                        ${item.product_name} (${item.size}) - 
+                                        <span class="font-medium">${item.quantity}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                    ordersContainer.insertAdjacentHTML('beforeend', orderHTML);
+                });
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+            }
+        }
+
+        // <button 
+        //     onclick="markAsCompleted(${order.id})"
+        //     class="bg-green-500 hover:bg-green-600 text-white font-medium py-1 px-3 rounded shadow-md transition">
+        //     Mark as Completed
+        // </button>
+        // Auto-refresh every 3 seconds
+        setInterval(fetchOrders, 3000);
+
+        // Function to mark an order as completed
+        async function markAsCompleted(orderId) {
+            const response = await fetch(`/complete-order/${orderId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+
+            if (response.ok) {
+                alert('Order marked as completed!');
+                fetchOrders(); // Refresh orders after marking as completed
+            } else {
+                alert('Failed to update the order status.');
+            }
+        }
+
+        // Fetch orders on page load
+        fetchOrders();
+    </script>
+
+</body>
+{% endblock layout %}
