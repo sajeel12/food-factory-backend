@@ -360,7 +360,7 @@ def in_progress_orders(request):
 
     return render(request, 'orders/inprogress_orders.html', {'orders': orders})
 
-@login_required(login_url='login_user')
+
 def in_progress_orders_data(request):
     orders = Order.objects.filter(status='In Progress').order_by('order_date')
 
