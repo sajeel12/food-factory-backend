@@ -189,32 +189,37 @@ document.querySelector('form').addEventListener('submit', async (e) => {
     </script>
 
     <script>
-        function addItem() {
-            const template = document.getElementById('item-template').content.cloneNode(true);
-            document.getElementById('additional-items').appendChild(template);
-        }
+document.addEventListener('change', function (e) {
+    // Check if the changed element is a product-select dropdown
+    if (e.target.classList.contains('product-select')) {
+        console.log('Product changed');
 
-        function removeItem(button) {
-            button.parentElement.remove();
-        }
+        const productId = e.target.value;
+        const variationSelect = e.target.closest('.item, .flex').querySelector('.variation-select');
 
-        document.addEventListener('change', function (e) {
-            if (e.target.classList.contains('product-select')) {
-                console.log('chened')
-                const productId = e.target.value;
-                const variationSelect = e.target.closest('.item').querySelector('.variation-select');
+        // Fetch the variations for the selected product
+        fetch(`/api/product-variations/${productId}/`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                variationSelect.innerHTML = '<option value="">Select a variation</option>';
+                data.variations.forEach(variation => {
+                    variationSelect.innerHTML += `<option value="${variation.id}">${variation.size}</option>`;
+                });
+            })
+            .catch(error => console.error('Error fetching variations:', error));
+    }
+});
 
-                fetch(`/api/product-variations/${productId}/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(data)
-                        variationSelect.innerHTML = '<option value="">Select a variation</option>';
-                        data.variations.forEach(variation => {
-                            variationSelect.innerHTML += `<option value="${variation.id}">${variation.size}</option>`;
-                        });
-                    });
-            }
-        });
+function addItem() {
+    const template = document.getElementById('item-template').content.cloneNode(true);
+    document.getElementById('additional-items').appendChild(template);
+}
+
+function removeItem(button) {
+    button.closest('.item, .flex').remove(); // Ensures the correct item is removed
+}
+
 
         window.onbeforeunload = function() {current_window.close()}
     </script>
