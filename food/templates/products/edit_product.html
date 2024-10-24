@@ -39,11 +39,8 @@
                     <input type="hidden" name="variation_id[]" value="{{ variation.id }}" />
                     <div>
                         <label class="block mb-2 text-sm font-medium text-gray-900">Size</label>
-                        <select name="size[]" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required>
-                            <option value="small" {% if variation.size == "small" %}selected{% endif %}>Small</option>
-                            <option value="medium" {% if variation.size == "medium" %}selected{% endif %}>Medium</option>
-                            <option value="large" {% if variation.size == "large" %}selected{% endif %}>Large</option>
-                        </select>
+                        <input type="text" step="0.01" name="size[]" value="{{ variation.size }}" class="bg-gray-50 border text-gray-900 rounded-lg block w-full p-2.5" required />
+
                     </div>
 
                     <div>
